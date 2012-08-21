@@ -28,19 +28,19 @@ static int my_log_hook(request_rec *r)
 }
 
 
-static void mycheck_hooks(apr_pool_t *pool)
+static void wathi_hooks(apr_pool_t *pool)
 {
   ap_hook_log_transaction(my_log_hook, NULL, NULL, APR_HOOK_MIDDLE);
 }
 
-module AP_MODULE_DECLARE_DATA mycheck_module = {
+module AP_MODULE_DECLARE_DATA wathi_module = {
     STANDARD20_MODULE_STUFF,
     NULL,
     NULL,
     NULL,
     NULL,
     NULL,
-    mycheck_hooks
+    wathi_hooks
 } ;
 
 

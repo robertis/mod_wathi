@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sys/time.h>
+#include "html.h"
 
 
 typedef long long i64;
@@ -15,6 +16,14 @@ using std::ios;
 extern "C" {
     
 string log_file="/tmp/log.txt";
+
+
+const char* get_dashboard_html(){
+    return html.c_str();
+}
+const char* get_api_json(){
+    return json.c_str();
+}
 
 void log_request(const char* method, char* unparsed_uri, double t, bool is_millis)
 {
@@ -41,6 +50,18 @@ void log_num(char* msg, i64 t)
     myfile.open (log_file.c_str(), ios::app);
     myfile << msg;
     myfile << t;
+    myfile << "\n";
+    myfile.close();
+
+}
+
+void log_string(char* key, char* value )
+{
+    ofstream myfile;
+    myfile.open (log_file.c_str(), ios::app);
+    myfile << key;
+    myfile << "\t";
+    myfile << value;
     myfile << "\n";
     myfile.close();
 

@@ -25,20 +25,8 @@ INSTALLATION
 
     </code>
 
-3. Run 'sudo make' on the top level folder. It will install the module and restart apache.
 
-	In a web browser , go to :
-	
-	<code>
-
-	    	http://localhost/wakai/web 
-
-	</code>
-
-	to view the dashboard.
-
-
-4. For setting up database, install sqlite3. 
+3. For setting up database, install sqlite3. 
 
 	a. Create a db file wathi.db in /tmp folder
 	
@@ -83,6 +71,17 @@ INSTALLATION
 	</code>
 
 
+4. Run 'sudo make' on the top level folder. It will install the module and restart apache.
+
+	In a web browser , go to :
+	
+	<code>
+
+	    	http://localhost/wakai/web 
+
+	</code>
+
+	to view the dashboard.
 
 
 

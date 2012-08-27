@@ -1,6 +1,7 @@
 LIBTOOL=/usr/share/apr-1/build-1/libtool
 LIBTOOL_INCLUDE=/usr/include/apr-1
 INSTALL_PATH=/usr/libexec/apache2
+APACHE2_INCLUDE=/usr/include/apache2
 
 OBJECTS=wathi_sdk.lo
 

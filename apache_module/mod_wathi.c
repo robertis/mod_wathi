@@ -21,7 +21,6 @@
 
 
 
-
 static int my_log_hook(request_rec *r)
 {
   double response_time; 
@@ -29,6 +28,7 @@ static int my_log_hook(request_rec *r)
   apr_time_t current_time= apr_time_now();
   apr_time_t time_diff = current_time - start_time;
   bool is_millis = false;
+  /*
   if(time_diff < 1000000){
       //log time in milliseconds
       is_millis = true;
@@ -37,8 +37,12 @@ static int my_log_hook(request_rec *r)
   else{
       //log time in seconds
       response_time = (double)time_diff/1000000;
-  }
+  }*/
+
+  //log time only in millisecs
+  response_time = (double)time_diff/1000;
   log_request(r->method, r->unparsed_uri, response_time, is_millis);
+  store_request(r, r->method, r->unparsed_uri, response_time);
 
 }
 
@@ -46,7 +50,6 @@ static int html_handler(request_rec *r)
 {
     ap_set_content_type(r, "text/html;charset=ascii");
     const char* msg = get_dashboard_html();
-    log_string("html frag", msg);
     ap_rputs(msg, r);
     return OK;
 }
@@ -55,11 +58,11 @@ static int rest_handler(request_rec *r)
 {
     //ap_set_content_type(r, "text/html;charset=ascii");
     r->content_type = "application/json";
-    const char* json = get_api_json();
+    //const char* json = get_api_json();
+    const char* json = get_all_data(r);
     ap_rputs(json, r);
     return OK;
 }
-
 
 static int wathi_handler(request_rec *r)
 {
@@ -80,9 +83,8 @@ static int wathi_handler(request_rec *r)
 
   return DECLINED;
 
-
-
 }
+
 
 static void wathi_hooks(apr_pool_t *pool)
 {

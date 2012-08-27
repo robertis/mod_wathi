@@ -3,7 +3,7 @@ WATHI
 
 An apache module for getting insights on every HTTP request
 
-Currently, it works only on Mac OSX ( Lion). It will be ported to Linux.
+Currently, it works only on Mac OSX ( Lion). Porting to Linux is easy.
 
 INSTALLATION
 ===============

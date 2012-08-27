@@ -1,4 +1,4 @@
-wathi
+WATHI
 ============
 
 An apache module for getting insights on every HTTP request
@@ -12,7 +12,9 @@ INSTALLATION
 1. Add the following to /etc/apache2/httpd.conf
 
     <code>
-	LoadModule wathi_module libexec/apache2/mod_wathi.so
+    
+    	LoadModule wathi_module libexec/apache2/mod_wathi.so
+    
     </code>
 
 2. For the web dashboard and the REST API , also add to httpd.conf
@@ -32,57 +34,66 @@ INSTALLATION
 	
 	b. Create a sql file, wathi.sql with contents
 	
-	<code>
+    <code>
 
-		CREATE TABLE requests ( id INTEGER PRIMARY KEY, method VARCHAR[32], uri VARCHAR[32], response_time REAL);
+        CREATE TABLE requests ( id INTEGER PRIMARY KEY, method VARCHAR[32], uri VARCHAR[32], response_time REAL);
 
-	</code>
+    </code>
 
 	c. Give read/write permission to the apache user. 
 	If you dont set this permission correctly, the apache module will not be able to write anything to the db.
 	
 	d. Run the command in the sqlite3 shell :
 	
-	<code>
+    <code>
 	
-		sqlite3 wathi.db
+        sqlite3 wathi.db
 		
-	</code>
+    </code>
 	
 	e. Run the command in the sqlite3 shell :
 	
-	<code>
+    <code>
     	
-		.read wathi.sql
+        .read wathi.sql
 		
-	</code>
+    </code>
 	
 	f. Add the following to the Apache config file ( httpd.conf)
     	
-	<code>
+    <code>
 
-		DBDriver        sqlite3
-		DBDParams       "/tmp/wathi.db"
-		DBDMin          1
-		DBDKeep         1
-		DBDMax          1
-		DBDPersist      On
+        DBDriver        sqlite3
+        DBDParams       "/tmp/wathi.db"
+        DBDMin          1
+        DBDKeep         1
+        DBDMax          1
+        DBDPersist      On
 
-	</code>
+    </code>
 
 
 4. Run 'sudo make' on the top level folder. It will install the module and restart apache.
 
 	In a web browser , go to :
 	
-	<code>
+    <code>
 
-	    	http://localhost/wakai/web 
+        http://localhost/wakai/web 
 
-	</code>
+    </code>
 
 	to view the dashboard.
+	
+	Or, go to : 
+	
+    <code>
 
+        http://localhost/wakai/rest 
+
+    </code>
+    
+	to view the insights data in json.
 
 
 

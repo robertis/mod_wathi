@@ -31,7 +31,7 @@ INSTALLATION
 	b. Create a sql file, wathi.sql with contents
 	
     
-	CREATE TABLE requests ( id INTEGER PRIMARY KEY, method VARCHAR[10], uri VARCHAR[256], time_stamp VARCHAR[52], response_time REAL);
+        CREATE TABLE requests ( id INTEGER PRIMARY KEY, method VARCHAR[10], uri VARCHAR[256], time_stamp VARCHAR[52], response_time REAL);
 
     
 	c. Give read/write permission to the apache user. 

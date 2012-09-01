@@ -105,13 +105,13 @@ const char* get_all_data(request_rec* r)
 
     if ((dbd = authn_dbd_acquire_fn(r)) == NULL) return "";
 
-
     const char* id;
     const char* method;
     const char* uri;
+    const char* time_stamp;
     const char* response_time;
 
-    std::string query = "SELECT * FROM requests;";
+    std::string query = "SELECT * FROM requests ORDER BY id DESC LIMIT 100;";
 
     apr_dbd_select(dbd->driver, r->pool, dbd->handle, &res, query.c_str(), 0);
 
@@ -121,17 +121,19 @@ const char* get_all_data(request_rec* r)
     int i =0;
 
     for (rv = apr_dbd_get_row(dbd->driver, r->pool, res, &row, -1);
-	 rv != -1;
-	 rv = apr_dbd_get_row(dbd->driver, r->pool, res, &row, -1)) {
-
+	     rv != -1;
+	     rv = apr_dbd_get_row(dbd->driver, r->pool, res, &row, -1)) 
+    {
 
 	id = apr_dbd_get_entry(dbd->driver, row, 0);
 	method = apr_dbd_get_entry(dbd->driver, row, 1);
 	uri = apr_dbd_get_entry(dbd->driver, row, 2);
-	response_time = apr_dbd_get_entry(dbd->driver, row, 3);
+	time_stamp = apr_dbd_get_entry(dbd->driver, row, 3);
+	response_time = apr_dbd_get_entry(dbd->driver, row, 4);
 	if(id == NULL) id = "null";
 	if(method == NULL) method = "null";
 	if(uri == NULL) uri = "null";
+	if(time_stamp == NULL) time_stamp = "null";
 	if(response_time == NULL) response_time = "null";
 
 	if(i > 0){
@@ -139,22 +141,26 @@ const char* get_all_data(request_rec* r)
 	}
 	i++;
 
-	json_str << "{ \" id \" : \" ";
+	json_str << "{ \"id\" : \"";
 	json_str << id;
-	json_str << " \" , \" method \" : \" ";
+	json_str << "\" , \"method\" : \"";
 	json_str << method;
-	json_str << " \" , \" uri \" : \" ";
+	json_str << "\" , \"uri\" : \"";
 	json_str << uri;
-	json_str << " \" , \" response_time \" : \" ";
+	json_str << "\" , \"time_stamp\" : \"";
+	json_str << time_stamp;
+	json_str << "\" , \"response_time\" : \"";
 	json_str << response_time;
-	json_str << " \" }";
+	json_str << "\" }";
     }
     json_str << " ]}";
 
     return json_str.str().c_str();
+
 }
 
-int store_request(request_rec *r, const char* method, char* unparsed_uri, double response_time){
+int store_request(request_rec *r, const char* method, char* unparsed_uri, 
+	double response_time, char* time_str){
 
     ap_dbd_t* dbd = NULL;
     apr_status_t rv;
@@ -170,7 +176,6 @@ int store_request(request_rec *r, const char* method, char* unparsed_uri, double
     if ((dbd = authn_dbd_acquire_fn(r)) == NULL)
         return 0;
 
-
     const char* id;
     const char* name;
 
@@ -178,9 +183,10 @@ int store_request(request_rec *r, const char* method, char* unparsed_uri, double
     strs << response_time;
     std::string response_time_str = strs.str();
 
-    string insert_query ="insert into requests (method,uri,response_time)  values ('";
+    string insert_query ="insert into requests (method,uri,time_stamp,response_time)  values ('";
     std::ostringstream query_str;
     query_str << insert_query << method << "','" << unparsed_uri ;
+    query_str << "','" << time_str ;
     query_str << "'," << response_time_str << ")";
 
 
@@ -191,7 +197,9 @@ int store_request(request_rec *r, const char* method, char* unparsed_uri, double
     return 1;
 
 }
-const char* get_request_data(const char* method, char* unparsed_uri, double response_time){
+
+const char* get_request_data(const char* method, char* unparsed_uri, double response_time)
+{
 }
 
 } //extern 

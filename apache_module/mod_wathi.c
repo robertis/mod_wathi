@@ -23,27 +23,19 @@
 
 static int my_log_hook(request_rec *r)
 {
-  double response_time; 
-  apr_time_t start_time= r->request_time;
-  apr_time_t current_time= apr_time_now();
-  apr_time_t time_diff = current_time - start_time;
-  bool is_millis = false;
-  /*
-  if(time_diff < 1000000){
-      //log time in milliseconds
-      is_millis = true;
-      response_time = (double)time_diff/1000;
-  }
-  else{
-      //log time in seconds
-      response_time = (double)time_diff/1000000;
-  }*/
+    double response_time; 
+    char* time_str;
+    apr_time_t start_time= r->request_time;
+    apr_time_t current_time= apr_time_now();
+    apr_time_t time_diff = current_time - start_time;
+    bool is_millis = false;
+    apr_ctime(time_str, start_time);
+    log_string("start time =  ",time_str);
 
-  //log time only in millisecs
-  response_time = (double)time_diff/1000;
-  log_request(r->method, r->unparsed_uri, response_time, is_millis);
-  store_request(r, r->method, r->unparsed_uri, response_time);
-
+    //log time only in millisecs
+    response_time = (double)time_diff/1000;
+    log_request(r->method, r->unparsed_uri, response_time, is_millis);
+    store_request(r, r->method, r->unparsed_uri, response_time, time_str);
 }
 
 static int html_handler(request_rec *r)
@@ -56,7 +48,6 @@ static int html_handler(request_rec *r)
 
 static int rest_handler(request_rec *r)
 {
-    //ap_set_content_type(r, "text/html;charset=ascii");
     r->content_type = "application/json";
     //const char* json = get_api_json();
     const char* json = get_all_data(r);
@@ -66,30 +57,30 @@ static int rest_handler(request_rec *r)
 
 static int wathi_handler(request_rec *r)
 {
-  if (!r->handler || strcmp(r->handler, "wathi")) {
+    if (!r->handler || strcmp(r->handler, "wathi")) {
+	return DECLINED;
+    }
+
+    if (r->method_number != M_GET) {
+	return HTTP_METHOD_NOT_ALLOWED;
+    }
+
+    if(!strcmp(r->path_info,"/rest")){
+	return rest_handler(r);
+    }
+    else if(!strcmp(r->path_info,"/web")){
+	return html_handler(r);
+    }
+
     return DECLINED;
-  }
-  if (r->method_number != M_GET) {
-    return HTTP_METHOD_NOT_ALLOWED;
-  }
-
-  if(!strcmp(r->path_info,"/rest")){
-      return rest_handler(r);
-  }
-  else if(!strcmp(r->path_info,"/web")){
-      return html_handler(r);
-  }
-
-
-  return DECLINED;
 
 }
 
 
 static void wathi_hooks(apr_pool_t *pool)
 {
-  ap_hook_log_transaction(my_log_hook, NULL, NULL, APR_HOOK_MIDDLE);
-  ap_hook_handler(wathi_handler, NULL, NULL, APR_HOOK_MIDDLE);
+    ap_hook_log_transaction(my_log_hook, NULL, NULL, APR_HOOK_MIDDLE);
+    ap_hook_handler(wathi_handler, NULL, NULL, APR_HOOK_MIDDLE);
 }
 
 module AP_MODULE_DECLARE_DATA wathi_module = {

@@ -160,7 +160,7 @@ const char* get_all_data(request_rec* r)
 }
 
 int store_request(request_rec *r, const char* method, char* unparsed_uri, 
-	double response_time, char* time_str){
+	double response_time){
 
     ap_dbd_t* dbd = NULL;
     apr_status_t rv;
@@ -169,6 +169,8 @@ int store_request(request_rec *r, const char* method, char* unparsed_uri,
     int i = 0;
     int n = 0;
     int nrows=0;
+    char* time_str=(char*)malloc(APR_CTIME_LEN + 1);
+    apr_ctime(time_str, r->request_time);
 
     authn_dbd_acquire_fn = APR_RETRIEVE_OPTIONAL_FN(ap_dbd_acquire);
     authn_dbd_prepare_fn = APR_RETRIEVE_OPTIONAL_FN(ap_dbd_prepare);
@@ -193,6 +195,12 @@ int store_request(request_rec *r, const char* method, char* unparsed_uri,
     log_string("query",(char*) query_str.str().c_str());
     apr_dbd_query(dbd->driver,dbd->handle, &nrows,query_str.str().c_str());
     log_num("num rows inserted = ",nrows);
+
+    //old school free/malloc
+    if(time_str !=NULL){
+	free(time_str);
+	time_str= NULL;
+    }
 
     return 1;
 

@@ -24,18 +24,16 @@
 static int my_log_hook(request_rec *r)
 {
     double response_time; 
-    char* time_str;
     apr_time_t start_time= r->request_time;
     apr_time_t current_time= apr_time_now();
     apr_time_t time_diff = current_time - start_time;
     bool is_millis = false;
-    apr_ctime(time_str, start_time);
-    log_string("start time =  ",time_str);
 
     //log time only in millisecs
     response_time = (double)time_diff/1000;
     log_request(r->method, r->unparsed_uri, response_time, is_millis);
-    store_request(r, r->method, r->unparsed_uri, response_time, time_str);
+    store_request(r, r->method, r->unparsed_uri, response_time);
+    //old school malloc-free, use apr pools instead
 }
 
 static int html_handler(request_rec *r)

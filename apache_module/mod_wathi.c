@@ -20,6 +20,13 @@
 #include "../sdk/wathi_sdk.h"
 
 
+module AP_MODULE_DECLARE_DATA wathi_module ;
+
+typedef struct wathi_cfg {
+  int use_db ;			
+  const char* data_file;
+} wathi_cfg ;
+
 
 static int my_log_hook(request_rec *r)
 {
@@ -28,10 +35,14 @@ static int my_log_hook(request_rec *r)
     apr_time_t current_time= apr_time_now();
     apr_time_t time_diff = current_time - start_time;
     bool is_millis = false;
+    wathi_cfg* cfg =
+	ap_get_module_config(r->per_dir_config, &wathi_module) ;
+
+    //log_num("hook log :: cfg choice ",(i64)cfg->use_db);
 
     //log time only in millisecs
     response_time = (double)time_diff/1000;
-    log_request(r->method, r->unparsed_uri, response_time, is_millis);
+    //log_request(r->method, r->unparsed_uri, response_time, is_millis);
     store_request(r, r->method, r->unparsed_uri, response_time);
     //old school malloc-free, use apr pools instead
 }
@@ -55,6 +66,11 @@ static int rest_handler(request_rec *r)
 
 static int wathi_handler(request_rec *r)
 {
+    wathi_cfg* cfg =
+	ap_get_module_config(r->per_dir_config, &wathi_module) ;
+
+    log_num("cfg use db ",(i64)cfg->use_db);
+    log_string("cfg data_file ", (char*)cfg->data_file);
     if (!r->handler || strcmp(r->handler, "wathi")) {
 	return DECLINED;
     }
@@ -74,6 +90,22 @@ static int wathi_handler(request_rec *r)
 
 }
 
+static void* wathi_cr_cfg(apr_pool_t* pool, char* x) {
+  wathi_cfg* ret = apr_pcalloc(pool, sizeof(wathi_cfg)) ;
+  ret->data_file = "/tmp/default-data.txt";
+  return ret ;
+}
+
+static const command_rec wathi_cmds[] = {
+  AP_INIT_FLAG("UseDBForStorage", ap_set_flag_slot,
+	(void*)APR_OFFSETOF(wathi_cfg, use_db), ACCESS_CONF,
+	"Enable data storage in DB"),
+  AP_INIT_TAKE1("FilePathForStorage", ap_set_string_slot,
+        (void*)APR_OFFSETOF(wathi_cfg, data_file),
+        OR_OPTIONS, "File for storing data instead of DB") ,
+  {NULL}
+} ;
+
 
 static void wathi_hooks(apr_pool_t *pool)
 {
@@ -83,11 +115,11 @@ static void wathi_hooks(apr_pool_t *pool)
 
 module AP_MODULE_DECLARE_DATA wathi_module = {
     STANDARD20_MODULE_STUFF,
+    wathi_cr_cfg ,
     NULL,
     NULL,
     NULL,
-    NULL,
-    NULL,
+    wathi_cmds ,
     wathi_hooks
 } ;
 

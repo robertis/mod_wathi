@@ -38,13 +38,12 @@ static int my_log_hook(request_rec *r)
     wathi_cfg* cfg =
 	ap_get_module_config(r->per_dir_config, &wathi_module) ;
 
-    //log_num("hook log :: cfg choice ",(i64)cfg->use_db);
+    log_num("hook log :: cfg choice ",(i64)cfg->use_db);
 
     //log time only in millisecs
     response_time = (double)time_diff/1000;
     //log_request(r->method, r->unparsed_uri, response_time, is_millis);
     store_request(r, r->method, r->unparsed_uri, response_time);
-    //old school malloc-free, use apr pools instead
 }
 
 static int html_handler(request_rec *r)
@@ -69,8 +68,8 @@ static int wathi_handler(request_rec *r)
     wathi_cfg* cfg =
 	ap_get_module_config(r->per_dir_config, &wathi_module) ;
 
-    log_num("cfg use db ",(i64)cfg->use_db);
-    log_string("cfg data_file ", (char*)cfg->data_file);
+    log_num("wathi handler cfg use db ",(i64)cfg->use_db);
+    log_string("wathi handler cfg data_file ", (char*)cfg->data_file);
     if (!r->handler || strcmp(r->handler, "wathi")) {
 	return DECLINED;
     }
@@ -106,11 +105,32 @@ static const command_rec wathi_cmds[] = {
   {NULL}
 } ;
 
+static int wathi_post_read(request_rec *r){
+    conn_rec* conn = r->connection;
+    char* ip = conn->remote_ip;
+    log_string("post read ip = ", ip);
+}
+
+static int wathi_access_checker(request_rec *r){
+    conn_rec* conn = r->connection;
+    char* ip = conn->remote_ip;
+    //return HTTP_EXPECTATION_FAILED;
+    return DECLINED;
+}
+
+static int wathi_fixups(request_rec *r){
+    conn_rec* conn = r->connection;
+    char* ip = conn->remote_ip;
+    log_string("fix up  ip", ip);
+}
 
 static void wathi_hooks(apr_pool_t *pool)
 {
     ap_hook_log_transaction(my_log_hook, NULL, NULL, APR_HOOK_MIDDLE);
     ap_hook_handler(wathi_handler, NULL, NULL, APR_HOOK_MIDDLE);
+    //ap_hook_post_read_request(wathi_post_read, NULL, NULL, APR_HOOK_MIDDLE);
+    //ap_hook_fixups(wathi_fixups, NULL, NULL, APR_HOOK_MIDDLE);
+    ap_hook_access_checker(wathi_access_checker, NULL, NULL, APR_HOOK_MIDDLE);
 }
 
 module AP_MODULE_DECLARE_DATA wathi_module = {
